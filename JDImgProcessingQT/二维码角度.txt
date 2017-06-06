@@ -1,0 +1,170 @@
+// #define pi 3.141592654
+
+void FuncGetRotationAngleAndCenter(snake_detectedRing detectedRings)
+{
+	struct snake_point vectorAB, vectorBC, vectorCA;
+	struct snake_point standardA, standardB, standardC, standardSlope;
+	struct snake_point noRightAngle_1, noRightAngle_2, testSlope;
+	struct snake_point imgCenter;
+	struct snake_point pointA, pointB, pointC;		//ABC按顺时针排序，B为直角点
+	int rotationDirection;
+	float cosTheta, rotationTheta;
+	float dist_1, dist_2, dist_3;		//三条边长度
+	float dotProduct;		//两条直角边点乘积
+	
+	// float vectorAB[2],vectorBC[2],vectorCA[2];
+	// float standardA[2] = {1, 0};
+	// float standardB[2] = {0, 0};
+	// float standardC[2] = {0, 1};
+	// float standardSlope[2] = {1, -1};
+	// float testSlope[2];
+	// float noRightAngle_1[2], noRightAngle_2[2];
+	// float pointA[2],pointB[2],pointC[2], imgCenter[2]	
+
+	// detectedRings[0].pos.Lin = 0;
+	// detectedRings[0].pos.Pix = 1;
+	// detectedRings[1].pos.Lin = 0;
+	// detectedRings[1].pos.Pix = 0;
+	// detectedRings[2].pos.Lin = -1;
+	// detectedRings[2].pos.Pix = 0;
+	
+	vectorAB.Pix = detectedRings[1].pos.Pix - detectedRings[0].pos.Pix;
+	vectorAB.Lin = detectedRings[1].pos.Lin - detectedRings[0].pos.Lin;
+	vectorBC.Pix = detectedRings[2].pos.Pix - detectedRings[1].pos.Pix;
+	vectorBC.Lin = detectedRings[2].pos.Lin - detectedRings[1].pos.Lin;
+	vectorCA.Pix = detectedRings[0].pos.Pix - detectedRings[2].pos.Pix;
+	vectorCA.Lin = detectedRings[0].pos.Lin - detectedRings[2].pos.Lin;
+	
+//	standardA[2] = {1, 0};		//标准情况下，三条边顺时针旋转
+//	standardB[2] = {0, 0};
+//	standardC[2] = {0, 1};
+//	standardSlope[2] = {1, -1};	//斜边标准向量
+	//叉乘为[0,0,-1]
+	
+	standardA.Pix = 0;
+	standardA.Lin = 1;	
+	standardB.Pix = 0;
+	standardB.Lin = 0;
+	standardC.Pix = 1;
+	standardC.Lin = 0;
+	standardSlope.Pix = -1;
+	standardSlope.Lin = 1;
+	
+	rotationDirection = -1;		//-1代表逆时针，1代表顺时针
+	
+	if (vectorAB.Pix * vectorBC.Lin - vectorAB.Lin * vectorBC.Pix > 0)		//满足条件说明，时针顺序与标准相同，后续只需判断直角点，即可确定三个点顺序
+	{
+		rotationDirection = 1;
+	}
+	
+	dist_1 = vectorAB.Pix * vectorAB.Pix + vectorAB.Lin * vectorAB.Lin;
+	dist_2 = vectorBC.Pix * vectorBC.Pix + vectorBC.Lin * vectorBC.Lin;
+	dist_3 = vectorCA.Pix * vectorCA.Pix + vectorCA.Lin * vectorCA.Lin;
+	
+	
+	if ((dist_3 > dist_2) && (dist_3 > dist_1))		//是否应该考虑数值误差？			//找出两条直角边
+	{
+		noRightAngle_1.Pix = detectedRings[2].pos.Pix;
+		noRightAngle_1.Lin = detectedRings[2].pos.Lin;
+		noRightAngle_2.Pix = detectedRings[0].pos.Pix;
+		noRightAngle_2.Lin = detectedRings[0].pos.Lin;	
+		dotProduct = vectorAB.Pix * vectorBC.Pix + vectorAB.Lin * vectorBC.Lin;
+		if (rotationDirection == 1)
+		{
+			testSlope.Pix = vectorCA.Pix;
+			testSlope.Lin = vectorCA.Lin;
+			pointA.Pix = detectedRings[0].pos.Pix;
+			pointA.Lin = detectedRings[0].pos.Lin;
+			pointB.Pix = detectedRings[1].pos.Pix;
+			pointB.Lin = detectedRings[1].pos.Lin;
+			pointC.Pix = detectedRings[2].pos.Pix;
+			pointC.Lin = detectedRings[2].pos.Lin;
+		}
+		else
+		{
+			testSlope.Pix = -1 * vectorCA.Pix;		//若旋转方向为逆时针，则斜边反向
+			testSlope.Lin = -1 * vectorCA.Lin;
+			pointA.Pix = detectedRings[2].pos.Pix;
+			pointA.Lin = detectedRings[2].pos.Lin;
+			pointB.Pix = detectedRings[1].pos.Pix;
+			pointB.Lin = detectedRings[1].pos.Lin;
+			pointC.Pix = detectedRings[0].pos.Pix;
+			pointC.Lin = detectedRings[0].pos.Lin;
+		}
+	}
+	else if ((dist_1 > dist_2) && (dist_1 > dist_3))
+	{
+		noRightAngle_1.Pix = detectedRings[0].pos.Pix;
+		noRightAngle_1.Lin = detectedRings[0].pos.Lin;
+		noRightAngle_2.Pix = detectedRings[1].pos.Pix;
+		noRightAngle_2.Lin = detectedRings[1].pos.Lin;
+		dotProduct = vectorBC.Pix * vectorCA.Pix + vectorBC.Lin * vectorCA.Lin;
+		if (rotationDirection == 1)
+		{
+			testSlope.Pix = vectorAB.Pix;
+			testSlope.Lin = vectorAB.Lin;
+			pointA.Pix = detectedRings[1].pos.Pix;
+			pointA.Lin = detectedRings[1].pos.Lin;
+			pointB.Pix = detectedRings[2].pos.Pix;
+			pointB.Lin = detectedRings[2].pos.Lin;
+			pointC.Pix = detectedRings[0].pos.Pix;
+			pointC.Lin = detectedRings[0].pos.Lin;
+		}
+		else
+		{
+			testSlope.Pix = -1 * vectorAB.Pix;		//若旋转方向为逆时针，则斜边反向
+			testSlope.Lin = -1 * vectorAB.Lin;
+			pointA.Pix = detectedRings[0].pos.Pix;
+			pointA.Lin = detectedRings[0].pos.Lin;
+			pointB.Pix = detectedRings[2].pos.Pix;
+			pointB.Lin = detectedRings[2].pos.Lin;
+			pointC.Pix = detectedRings[1].pos.Pix;
+			pointC.Lin = detectedRings[1].pos.Lin;
+		}
+	}
+	else if ((dist_2 > dist_1) && (dist_2 > dist_3))
+	{
+		noRightAngle_1.Pix = detectedRings[1].pos.Pix;
+		noRightAngle_1.Lin = detectedRings[1].pos.Lin;
+		noRightAngle_2.Pix = detectedRings[2].pos.Pix;
+		noRightAngle_2.Lin = detectedRings[2].pos.Lin;
+		dotProduct = vectorCA.Pix * vectorAB.Pix + vectorCA.Lin * vectorAB.Lin;
+		if (rotationDirection == 1)
+		{
+			testSlope.Pix = vectorBC.Pix;
+			testSlope.Lin = vectorBC.Lin;
+			pointA.Pix = detectedRings[2].pos.Pix;
+			pointA.Lin = detectedRings[2].pos.Lin;
+			pointB.Pix = detectedRings[0].pos.Pix;
+			pointB.Lin = detectedRings[0].pos.Lin;
+			pointC.Pix = detectedRings[1].pos.Pix;
+			pointC.Lin = detectedRings[1].pos.Lin;
+		}
+		else
+		{
+			testSlope.Pix = -1 * vectorBC.Pix;		//若旋转方向为逆时针，则斜边反向
+			testSlope.Lin = -1 * vectorBC.Lin;
+			pointA.Pix = detectedRings[1].pos.Pix;
+			pointA.Lin = detectedRings[1].pos.Lin;
+			pointB.Pix = detectedRings[0].pos.Pix;
+			pointB.Lin = detectedRings[0].pos.Lin;
+			pointC.Pix = detectedRings[2].pos.Pix;
+			pointC.Lin = detectedRings[2].pos.Lin;
+		}
+	}
+	
+	cosTheta = (-1 * testSlope.Pix + testSlope.Lin) / sqrt(2 * (testSlope.Pix * testSlope.Pix + testSlope.Lin * testSlope.Lin));
+	rotationTheta = acos(cosTheta);		//图像旋转角度，输出为弧度，返回0-pi
+	//设定：图像顺时针旋转为正，逆时针旋转为负，弧度范围[-pi, pi]
+	if (standardSlope.Pix * testSlope.Lin - standardSlope.Lin * testSlope.Pix < 0)
+	{
+		rotationTheta = -1 * rotationTheta;
+	}
+	
+	imgCenter.Pix = (noRightAngle_1.Pix + noRightAngle_2.Pix) / 2;		//图像中心点坐标
+	imgCenter.Lin = (noRightAngle_1.Lin + noRightAngle_2.Lin) / 2;
+		
+	// printf("Rotation Angle is: %f\n", rotationTheta);
+	// printf("Img Center is: %f\t%f\n", imgCenter.Lin, imgCenter.Pix);
+	// printf("The dot product of two right-angle sides is: %f\n", dotProduct);
+}
